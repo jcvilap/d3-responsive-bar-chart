@@ -1,0 +1,71 @@
+// set the dimensions of the canvas
+var margin = {top: 20, right: 40, bottom: 50, left: 40},
+    width = parseInt(d3.select("#chart").style("width")) - margin.left - margin.right,
+    height = parseInt(d3.select("#chart").style("height")) - margin.top - margin.bottom;
+
+// set the ranges
+var x = d3.scale.ordinal().rangeRoundBands([0, width], .05);
+var y = d3.scale.linear().range([height, 0]);
+
+// define the axis
+var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom");
+
+var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left")
+    .ticks(10);
+
+// add the SVG element
+var svg = d3
+    .select("#chart")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+// load the data
+d3.json("data.json", function (error, data) {
+    data.forEach(function (d) {
+        d.Letter = d.Letter;
+        d.Freq = +d.Freq;
+    });
+
+    // scale the range of the data
+    x.domain(data.map(function (d) {
+        return d.Letter;
+    }));
+    y.domain([0, d3.max(data, function (d) {
+        return d.Freq;
+    })]);
+
+    // add axis
+    svg.append("g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + height + ")")
+        .call(xAxis)
+        .selectAll("text")
+        .style("text-anchor", "end")
+        .attr("dx", "0.35em");
+
+    svg.append("g")
+        .attr("class", "y axis")
+        .call(yAxis);
+
+    // Add bar chart
+    svg.selectAll("bar")
+        .data(data)
+        .enter().append("rect")
+        .attr("class", "bar")
+        .attr("x", function (d) {
+            return x(d.Letter);
+        })
+        .attr("width", x.rangeBand())
+        .attr("y", function (d) {
+            return y(d.Freq);
+        })
+        .attr("height", function (d) {
+            return height - y(d.Freq);
+        });
+});
