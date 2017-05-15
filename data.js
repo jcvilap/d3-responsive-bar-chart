@@ -1,4 +1,4 @@
-[
+data = [
   {
     "Letter": "A",
     "Freq": 20

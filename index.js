@@ -1,71 +1,90 @@
-// set the dimensions of the canvas
-var margin = {top: 20, right: 40, bottom: 50, left: 40},
-    width = parseInt(d3.select("#chart").style("width")) - margin.left - margin.right,
-    height = parseInt(d3.select("#chart").style("height")) - margin.top - margin.bottom;
+(function () {
+    var _this = this;
 
-// set the ranges
-var x = d3.scale.ordinal().rangeRoundBands([0, width], .05);
-var y = d3.scale.linear().range([height, 0]);
+    function constructor() {
+        _this.chart = d3.select("#chart");
+        _this.data = data;
 
-// define the axis
-var xAxis = d3.svg.axis()
-    .scale(x)
-    .orient("bottom");
+        bindEvents();
+        render();
+    }
 
-var yAxis = d3.svg.axis()
-    .scale(y)
-    .orient("left")
-    .ticks(10);
+    /**
+     * Bind events here
+     */
+    function bindEvents() {
+        d3.select(window).on('resize', render);
+    }
 
-// add the SVG element
-var svg = d3
-    .select("#chart")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-    .append("g")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    /**
+     * Populate Chart props
+     * @returns {*} Chart props
+     */
+    function getAttributes() {
+        var margin = {top: 20, right: 40, bottom: 50, left: 40};                        // Margins
+        var w = parseInt(_this.chart.style("width")) - margin.left - margin.right;      // Width
+        var h = parseInt(_this.chart.style("height")) - margin.top - margin.bottom;     // Height
+        var x = d3.scale.ordinal().rangeRoundBands([0, w], .05);                        // xScale
+        var y = d3.scale.linear().range([h, 0]);                                        // yScale
+        var xAxis = d3.svg.axis().scale(x).orient("bottom");                            // xAxis
+        var yAxis = d3.svg.axis().scale(y).orient("left").ticks(10);                    // yAxis
 
-// load the data
-d3.json("data.json", function (error, data) {
-    data.forEach(function (d) {
-        d.Letter = d.Letter;
-        d.Freq = +d.Freq;
-    });
+        return {margin: margin, w: w, h: h, x: x, y: y, xAxis: xAxis, yAxis: yAxis};
+    }
 
-    // scale the range of the data
-    x.domain(data.map(function (d) {
-        return d.Letter;
-    }));
-    y.domain([0, d3.max(data, function (d) {
-        return d.Freq;
-    })]);
+    /**
+     * Renders Chart
+     */
+    function render() {
+        // Reset on window resize
+        _this.svg && _this.svg.selectAll("*").remove();
+        // Fetch attributes
+        _this.attributes = getAttributes();
+        // Populate add and store SVG
+        _this.svg = _this.chart
+            .attr("width", _this.attributes.w + _this.attributes.margin.left + _this.attributes.margin.right)
+            .attr("height", _this.attributes.h + _this.attributes.margin.top + _this.attributes.margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + _this.attributes.margin.left + "," + _this.attributes.margin.top + ")");
+        // Scale the range of the data
+        _this.attributes.x.domain(data.map(function (d) {
+            return d.Letter;
+        }));
+        _this.attributes.y.domain([0, d3.max(data, function (d) {
+            return d.Freq;
+        })]);
+        // Add axis
+        _this.svg
+            .append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0," + _this.attributes.h + ")")
+            .call(_this.attributes.xAxis)
+            .selectAll("text")
+            .style("text-anchor", "end")
+            .attr("dx", "0.35em");
+        _this.svg
+            .append("g")
+            .attr("class", "y axis")
+            .call(_this.attributes.yAxis);
 
-    // add axis
-    svg.append("g")
-        .attr("class", "x axis")
-        .attr("transform", "translate(0," + height + ")")
-        .call(xAxis)
-        .selectAll("text")
-        .style("text-anchor", "end")
-        .attr("dx", "0.35em");
+        // Add bar chart
+        _this.svg
+            .selectAll("bar")
+            .data(data)
+            .enter().append("rect")
+            .attr("class", "bar")
+            .attr("x", function (d) {
+                return _this.attributes.x(d.Letter);
+            })
+            .attr("width", _this.attributes.x.rangeBand())
+            .attr("y", function (d) {
+                return _this.attributes.y(d.Freq);
+            })
+            .attr("height", function (d) {
+                return _this.attributes.h - _this.attributes.y(d.Freq);
+            });
+    }
 
-    svg.append("g")
-        .attr("class", "y axis")
-        .call(yAxis);
-
-    // Add bar chart
-    svg.selectAll("bar")
-        .data(data)
-        .enter().append("rect")
-        .attr("class", "bar")
-        .attr("x", function (d) {
-            return x(d.Letter);
-        })
-        .attr("width", x.rangeBand())
-        .attr("y", function (d) {
-            return y(d.Freq);
-        })
-        .attr("height", function (d) {
-            return height - y(d.Freq);
-        });
-});
+    // Invoke constructor
+    constructor();
+})();

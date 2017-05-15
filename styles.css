@@ -4,12 +4,12 @@
     position: absolute;
 }
 
-.bar{
-    fill: steelblue;
+.bar {
+    fill: purple;
 }
 
-.bar:hover{
-    fill: brown;
+.bar:hover {
+    fill: cyan;
 }
 
 .axis {
