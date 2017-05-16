@@ -5,6 +5,13 @@
         _this.chart = d3.select("#chart");
         _this.data = data;
 
+        // Parse date in data object
+        _this.data.forEach(function (kv) {
+            kv.Data.forEach(function (d) {
+                d.Date = d3.time.format("%Y%m%d").parse(d.Date);
+            });
+        });
+
         bindEvents();
         render();
     }
@@ -58,12 +65,7 @@
         _this.attributes.color.domain(data.map(function (d) {
             return d.City;
         }));
-        // Parse date in data object
-        data.forEach(function (kv) {
-            kv.Data.forEach(function (d) {
-                d.Date = d3.time.format("%Y%m%d").parse(d.Date);
-            });
-        });
+
         var minX = d3.min(data, function (kv) {
             return d3.min(kv.Data, function (d) {
                 return d.Date;
@@ -124,7 +126,7 @@
                 };
             })
             .attr("transform", function (d) {
-                return "translate(" + x(d.date) + "," + y(d.value) + ")";
+                return "translate(" + _this.attributes.x(d.date) + "," + _this.attributes.y(d.value) + ")";
             })
             .attr("x", 3)
             .attr("dy", ".35em")
