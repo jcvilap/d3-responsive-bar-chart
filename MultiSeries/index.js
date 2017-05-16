@@ -30,8 +30,12 @@
         var yAxis = d3.svg.axis().scale(y).orient("left");                              // yAxis
         var color = d3.scale.category10();
         var line = d3.svg.line().interpolate("basis")
-            .x(function (d) {return x(d.Date)})
-            .y(function (d) {return y(d.Value)});
+            .x(function (d) {
+                return x(d.Date)
+            })
+            .y(function (d) {
+                return y(d.Value)
+            });
 
         return {margin: margin, w: w, h: h, x: x, y: y, xAxis: xAxis, yAxis: yAxis, color: color, line: line};
     }
@@ -51,17 +55,35 @@
             .append("g")
             .attr("transform", "translate(" + _this.attributes.margin.left + "," + _this.attributes.margin.top + ")");
         // Set color
-        _this.attributes.color.domain(data.map(function (d) { return d.City; }));
+        _this.attributes.color.domain(data.map(function (d) {
+            return d.City;
+        }));
         // Parse date in data object
         data.forEach(function (kv) {
             kv.Data.forEach(function (d) {
                 d.Date = d3.time.format("%Y%m%d").parse(d.Date);
             });
         });
-        var minX = d3.min(data, function (kv) { return d3.min(kv.Data, function (d) { return d.Date; }) });
-        var maxX = d3.max(data, function (kv) { return d3.max(kv.Data, function (d) { return d.Date; }) });
-        var minY = d3.min(data, function (kv) { return d3.min(kv.Data, function (d) { return d.Value; }) });
-        var maxY = d3.max(data, function (kv) { return d3.max(kv.Data, function (d) { return d.Value; }) });
+        var minX = d3.min(data, function (kv) {
+            return d3.min(kv.Data, function (d) {
+                return d.Date;
+            })
+        });
+        var maxX = d3.max(data, function (kv) {
+            return d3.max(kv.Data, function (d) {
+                return d.Date;
+            })
+        });
+        var minY = d3.min(data, function (kv) {
+            return d3.min(kv.Data, function (d) {
+                return d.Value;
+            })
+        });
+        var maxY = d3.max(data, function (kv) {
+            return d3.max(kv.Data, function (d) {
+                return d.Value;
+            })
+        });
 
         _this.attributes.x.domain([minX, maxX]);
         _this.attributes.y.domain([minY, maxY]);
@@ -69,13 +91,13 @@
         // Add x & y axis
         _this.svg
             .append("g")
-                .attr("class", "x axis")
-                .attr("transform", "translate(0," + _this.attributes.h + ")")
-                .call(_this.attributes.xAxis);
+            .attr("class", "x axis")
+            .attr("transform", "translate(0," + _this.attributes.h + ")")
+            .call(_this.attributes.xAxis);
         _this.svg
             .append("g")
-                .attr("class", "y axis")
-                .call(_this.attributes.yAxis);
+            .attr("class", "y axis")
+            .call(_this.attributes.yAxis);
 
         // Add bar chart
         var city = _this.svg
